@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, comparePasswords, generateToken, getSession } from '@/lib/auth';
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: Request) {
   try {
     const session = await getSession();
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       user: {
         id: session.id,
         email: session.email,
-        name: session.name || ''
+        name: session.name || '' // Provide default empty string if null
       }
     });
   } catch (error) {
@@ -57,27 +57,25 @@ export async function POST(request: Request) {
       const token = await generateToken({
         id: user.id,
         email: user.email,
-        name: user.name || ''
+        name: user.name || '' // Provide default empty string if null
       });
       
       const response = NextResponse.json({ 
         user: {
           id: user.id,
           email: user.email,
-          name: user.name || ''
+          name: user.name || '' // Provide default empty string if null
         }
       });
       
-      // Set cookie dengan sameSite: 'lax'
-      response.cookies.set({
-        name: 'token',
-        value: token,
+      response.cookies.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 // 24 hours
+        sameSite: 'none', // Ubah SameSite menjadi 'none'
+        maxAge: 60 * 60 * 24
       });
+      
+      console.log('Set cookie token:', token);
       
       return response;
     } catch (error) {
@@ -110,34 +108,32 @@ export async function POST(request: Request) {
         data: {
           email,
           password: hashedPassword,
-          name: name || ''
+          name: name || '' // Provide default empty string if null
         }
       });
       
       const token = await generateToken({
         id: user.id,
         email: user.email,
-        name: user.name || ''
+        name: user.name || '' // Provide default empty string if null
       });
       
       const response = NextResponse.json({ 
         user: {
           id: user.id,
           email: user.email,
-          name: user.name || ''
+          name: user.name || '' // Provide default empty string if null
         }
       });
       
-      // Set cookie dengan sameSite: 'lax'
-      response.cookies.set({
-        name: 'token',
-        value: token,
+      response.cookies.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
+        sameSite: 'none', // Ubah SameSite menjadi 'none'
         maxAge: 60 * 60 * 24
       });
+      
+      console.log('Set cookie token:', token);
       
       return response;
     } catch (error) {
@@ -152,16 +148,7 @@ export async function POST(request: Request) {
   // Logout handler
   if (request.url.endsWith('/logout')) {
     const response = NextResponse.json({ success: true });
-    // Delete cookie dengan setting yang sama
-    response.cookies.set({
-      name: 'token',
-      value: '',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 0
-    });
+    response.cookies.delete('token');
     return response;
   }
   
