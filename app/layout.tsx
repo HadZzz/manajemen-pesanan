@@ -14,7 +14,7 @@ export default function RootLayout({
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   return (
     <html lang="en">

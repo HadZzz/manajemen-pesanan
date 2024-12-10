@@ -24,6 +24,14 @@ export const Navbar = () => {
     console.log("User state changed:", user);
   }, [user]);
 
+  useEffect(() => {
+    console.log("Check auth state:", checkAuth);
+  }, [checkAuth]);
+
+  useEffect(() => {
+    console.log("User state and check auth state:", user, checkAuth);
+  }, [user, checkAuth]);
+
   const handleLogout = async () => {
     try {
       await logout();

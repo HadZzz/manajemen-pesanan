@@ -81,7 +81,6 @@ export default function DashboardPage() {
         throw new Error('Failed to create order');
       }
 
-      const newOrder = await response.json();
       toast.success('Pesanan berhasil dibuat');
       
       // Refresh orders after creating new one
