@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST() {
   // Login handler
   if (request.url.endsWith('/login')) {
     try {

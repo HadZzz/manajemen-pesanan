@@ -17,7 +17,7 @@ export const Navbar = () => {
   useEffect(() => {
     console.log("Current user state:", user);
     checkAuth();
-  }, []);
+  }, [checkAuth, user]);
 
   // Monitor user state changes
   useEffect(() => {
