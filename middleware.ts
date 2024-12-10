@@ -3,38 +3,42 @@ import type { NextRequest } from 'next/server';
 import { validateRequest } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
-  // Paths that don't require authentication
-  const publicPaths = ['/dashboard/login', '/dashboard/register'];
-  const isPublicPath = publicPaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
-  );
-
   // Get user from session
   const user = await validateRequest(request);
   
-  // Add console logs for debugging
+  // Debug: Log current path and authentication status
   console.log('Current path:', request.nextUrl.pathname);
-  console.log('Is public path:', isPublicPath);
-  console.log('User:', user);
-  
-  // Redirect if trying to access auth pages while logged in
-  if (isPublicPath && user) {
-    console.log('Redirecting to dashboard (already logged in)');
+  console.log('Authentication status:', !!user);
+
+  // Public routes that don't need authentication
+  const publicPaths = ['/dashboard/login', '/dashboard/register'];
+  const isPublicPath = publicPaths.includes(request.nextUrl.pathname);
+
+  // If path starts with /dashboard and user is not authenticated
+  if (request.nextUrl.pathname.startsWith('/dashboard') && !user && !isPublicPath) {
+    // Redirect to login
+    return NextResponse.redirect(new URL('/dashboard/login', request.url));
+  }
+
+  // If user is authenticated and trying to access login/register
+  if (user && isPublicPath) {
+    // Redirect to dashboard
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
-  
-  // Redirect to login if trying to access protected pages while logged out
-  if (!isPublicPath && !user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    console.log('Redirecting to login (not authenticated)');
-    const loginUrl = new URL('/dashboard/login', request.url);
-    return NextResponse.redirect(loginUrl);
-  }
-  
+
   return NextResponse.next();
 }
 
+// Update matcher to only handle dashboard routes
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
     '/dashboard/:path*'
-  ]
+  ],
 };
