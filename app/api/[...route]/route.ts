@@ -71,9 +71,11 @@ export async function POST(request: Request) {
       response.cookies.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none', // Ubah SameSite menjadi 'none'
         maxAge: 60 * 60 * 24
       });
+      
+      console.log('Set cookie token:', token);
       
       return response;
     } catch (error) {
@@ -127,9 +129,11 @@ export async function POST(request: Request) {
       response.cookies.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none', // Ubah SameSite menjadi 'none'
         maxAge: 60 * 60 * 24
       });
+      
+      console.log('Set cookie token:', token);
       
       return response;
     } catch (error) {
