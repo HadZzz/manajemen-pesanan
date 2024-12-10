@@ -12,6 +12,8 @@ export async function middleware(request: NextRequest) {
   // Get user from session
   const user = await validateRequest(request);
   
+  console.log('Middleware user:', user);
+  
   // Redirect if trying to access auth pages while logged in
   if (isPublicPath && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url));

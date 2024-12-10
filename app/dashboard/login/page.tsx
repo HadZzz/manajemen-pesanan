@@ -27,13 +27,14 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     try {
       await login(formData.email, formData.password);
       toast.success('Login berhasil');
       
       // Tambahkan delay kecil untuk memastikan state terupdate
       setTimeout(() => {
+        console.log('Navigating to /dashboard');
         router.push('/dashboard');
         router.refresh(); // Refresh untuk memastikan Navbar terupdate
       }, 100);

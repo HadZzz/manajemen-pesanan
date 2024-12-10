@@ -16,7 +16,7 @@ export const generatePDF = (order: Order) => {
   pdf.text(`Nama Pelanggan: ${order.customerName}`, margin, y += 10);
   pdf.text(`Nama Produk: ${order.productName}`, margin, y += 10);
   pdf.text(`Jumlah: ${order.quantity}`, margin, y += 10);
-  pdf.text(`Total Harga: Rp ${parseInt(order.totalPrice).toLocaleString()}`, margin, y += 10);
+  pdf.text(`Total Harga: Rp ${parseInt(order.totalPrice, 10).toLocaleString()}`, margin, y += 10);
   pdf.text(`Tanggal Pesanan: ${new Date(order.orderDate).toLocaleDateString()}`, margin, y += 10);
   pdf.text(`Deadline: ${new Date(order.deadline).toLocaleDateString()}`, margin, y += 10);
   
@@ -41,8 +41,8 @@ export const generatePDF = (order: Order) => {
   // Table content
   order.components.forEach(component => {
     pdf.text(component.name, margin, y);
-    pdf.text(component.quantity, 100, y);
-    pdf.text(`Rp ${parseInt(component.price).toLocaleString()}`, 140, y);
+    pdf.text(component.quantity.toString(), 100, y);
+    pdf.text(`Rp ${parseInt(component.price, 10).toLocaleString()}`, 140, y);
     y += 10;
   });
 
