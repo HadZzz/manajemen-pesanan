@@ -14,6 +14,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@node-rs/bcrypt": "^1.10.7",
     "@prisma/client": "^6.0.1",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-progress": "^1.1.0",
@@ -23,7 +24,6 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/pg": "^8.11.10",
     "bcrypt": "^5.1.1",
-    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jose": "^5.9.6",

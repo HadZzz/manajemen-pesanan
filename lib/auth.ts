@@ -1,7 +1,7 @@
 import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import bcryptjs from 'bcryptjs';
+import { hash, verify } from '@node-rs/bcrypt';
 
 // Define types for the token payload
 interface TokenPayload {
@@ -14,12 +14,11 @@ interface TokenPayload {
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcryptjs.genSalt(10);
-  return bcryptjs.hash(password, salt);
+  return await hash(password, 10);
 }
 
 export async function comparePasswords(password: string, hash: string): Promise<boolean> {
-  return bcryptjs.compare(password, hash);
+  return await verify(password, hash);
 }
 
 export async function generateToken(payload: TokenPayload): Promise<string> {
