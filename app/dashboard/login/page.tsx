@@ -11,36 +11,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
-import { useAuth } from '@/app/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
+  // Check if user is already logged in
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     try {
       await login(formData.email, formData.password);
       toast.success('Login berhasil');
       
-      // Tambahkan delay kecil untuk memastikan state terupdate
+      // Tunggu sebentar sebelum redirect
       setTimeout(() => {
-        console.log('Navigating to /dashboard');
         router.push('/dashboard');
-        router.refresh(); // Refresh untuk memastikan Navbar terupdate
+        router.refresh();
       }, 100);
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      toast.error(error instanceof Error ? error.message : 'Login gagal');
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +77,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="name@example.com"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -83,6 +90,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -95,7 +103,11 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading}
+            >
               {isLoading ? 'Loading...' : 'Login'}
             </Button>
 
