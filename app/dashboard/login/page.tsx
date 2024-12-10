@@ -11,26 +11,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-
-  // Check if user is already logged in
-  useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
-    }
-  }, [user, router]);
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -38,11 +31,8 @@ export default function LoginPage() {
     try {
       await login(formData.email, formData.password);
       toast.success('Login berhasil');
-      
-      // Tunggu sebentar sebelum redirect
       setTimeout(() => {
         router.push('/dashboard');
-        router.refresh();
       }, 100);
     } catch (error) {
       console.error('Login error:', error);
@@ -77,7 +67,6 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="name@example.com"
                 required
-                disabled={isLoading}
               />
             </div>
 
@@ -90,7 +79,6 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                disabled={isLoading}
               />
             </div>
 
