@@ -1,9 +1,12 @@
 import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { hash, verify } from '@node-rs/bcrypt';
+import bcrypt from 'bcryptjs';
 
-// Define types for the token payload
+// Tambahkan konfigurasi runtime
+export const runtime = 'nodejs'; // Force Node.js runtime
+
+// Sisanya tetap sama seperti sebelumnya
 interface TokenPayload {
   id: number;
   email: string;
@@ -14,12 +17,15 @@ interface TokenPayload {
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function hashPassword(password: string): Promise<string> {
-  return await hash(password, 10);
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
 }
 
 export async function comparePasswords(password: string, hash: string): Promise<boolean> {
-  return await verify(password, hash);
+  return bcrypt.compare(password, hash);
 }
+
+// Fungsi lainnya tetap sama
 
 export async function generateToken(payload: TokenPayload): Promise<string> {
   const token = await new SignJWT(payload)
