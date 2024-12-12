@@ -47,7 +47,7 @@ export default function Home() {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white tracking-tight">
-              SMK <span className="text-blue-600 dark:text-blue-400">PEDAN</span>
+              SMK Kristen <span className="text-blue-600 dark:text-blue-400">PEDAN</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl">
