@@ -58,11 +58,11 @@ export const Navbar = () => {
             {/* Logo */}
             <div className="flex items-center space-x-2">
               <Trophy className="h-6 w-6 text-blue-600" />
-              <span className="font-bold text-xl">SMK PEDAN</span>
+              <span className="font-bold text-xl">SMK Kristen PEDAN</span>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -106,7 +106,7 @@ export const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-md hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
