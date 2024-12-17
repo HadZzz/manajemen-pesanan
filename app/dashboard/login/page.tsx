@@ -31,9 +31,8 @@ export default function LoginPage() {
     try {
       await login(formData.email, formData.password);
       toast.success('Login berhasil');
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 100);
+      router.push('/dashboard');
+      router.refresh();
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error instanceof Error ? error.message : 'Login gagal');

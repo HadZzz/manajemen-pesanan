@@ -55,7 +55,11 @@ export const useAuth = create<AuthState>((set) => ({
         throw new Error(data.error || 'Login failed');
       }
 
-      set({ user: data.user });
+      await new Promise<void>((resolve) => {
+        set({ user: data.user });
+        resolve();
+      });
+      
       console.log("Login successful, user:", data.user);
     } catch (error) {
       console.error('Login error:', error);

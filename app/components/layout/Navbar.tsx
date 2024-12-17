@@ -15,28 +15,15 @@ export const Navbar = () => {
 
   // Check auth status when component mounts
   useEffect(() => {
-    console.log("Current user state:", user);
     checkAuth();
-  }, [checkAuth, user]);
-
-  // Monitor user state changes
-  useEffect(() => {
-    console.log("User state changed:", user);
-  }, [user]);
-
-  useEffect(() => {
-    console.log("Check auth state:", checkAuth);
   }, [checkAuth]);
-
-  useEffect(() => {
-    console.log("User state and check auth state:", user, checkAuth);
-  }, [user, checkAuth]);
 
   const handleLogout = async () => {
     try {
       await logout();
       toast.success('Berhasil logout');
       router.push('/dashboard/login');
+      router.refresh();
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Gagal logout');
@@ -45,10 +32,13 @@ export const Navbar = () => {
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
-    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", requireAuth: true },
     { href: "/prestasi", icon: Trophy, label: "Prestasi" },
     { href: "/contact", icon: Phone, label: "Contact" },
   ];
+
+  // Filter nav items based on auth status
+  const filteredNavItems = navItems.filter(item => !item.requireAuth || (item.requireAuth && user));
 
   return (
     <>
@@ -56,14 +46,14 @@ export const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
               <Trophy className="h-6 w-6 text-blue-600" />
               <span className="font-bold text-xl">SMK Kristen PEDAN</span>
-            </div>
+            </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-4">
-              {navItems.map((item) => {
+              {filteredNavItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link key={item.href} href={item.href}>
@@ -83,7 +73,7 @@ export const Navbar = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md">
                     <UserCircle className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm">{user.email}</span>
+                    <span className="text-sm font-medium">{user.email}</span>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -120,15 +110,15 @@ export const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => {
+          <div className="lg:hidden border-t bg-white">
+            <div className="px-2 pt-2 pb-3 space-y-2">
+              {filteredNavItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button
                       variant={pathname === item.href ? "default" : "ghost"}
-                      className="w-full justify-start space-x-2"
+                      className="w-full justify-start gap-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Icon className="h-4 w-4" />
@@ -144,13 +134,16 @@ export const Navbar = () => {
                   <div className="px-3 py-2 bg-gray-50 rounded-md">
                     <div className="flex items-center gap-2">
                       <UserCircle className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm">{user.email}</span>
+                      <span className="text-sm font-medium">{user.email}</span>
                     </div>
                   </div>
                   <Button
                     variant="ghost"
-                    onClick={handleLogout}
-                    className="w-full justify-start space-x-2 text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full justify-start gap-2 text-red-600 hover:bg-red-50"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
@@ -158,26 +151,22 @@ export const Navbar = () => {
                 </>
               ) : (
                 <Link href="/dashboard/login" className="block">
-                  <Button variant="default" className="w-full">
-                    Login
+                  <Button 
+                    variant="default" 
+                    className="w-full justify-start gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <UserCircle className="h-4 w-4" />
+                    <span>Login</span>
                   </Button>
                 </Link>
               )}
-            </div>
-
-            {/* Footer Info in Mobile Menu */}
-            <div className="border-t p-4">
-              <div className="text-sm text-gray-500 space-y-1">
-                <p className="font-medium">SMK PEDAN</p>
-                <p>Sistem Informasi Manajemen</p>
-                <p>© 2024</p>
-              </div>
             </div>
           </div>
         )}
       </nav>
 
-      {/* Spacer untuk mencegah konten tertutup navbar */}
+      {/* Spacer to prevent content from being hidden under navbar */}
       <div className="h-16" />
     </>
   );
