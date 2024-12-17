@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState('progress');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Cek apakah pengguna adalah admin
 
   // Fetch orders from API
   const fetchOrders = async () => {

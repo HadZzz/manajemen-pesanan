@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export const Navbar = () => {
   const pathname = usePathname();
@@ -47,7 +48,12 @@ export const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <Trophy className="h-6 w-6 text-blue-600" />
+              <Image
+                src="/logo.jpeg" // Path relatif ke folder public
+                alt="Logo"
+                width={30} // Lebar gambar
+                height={30} // Tinggi gambar
+              />
               <span className="font-bold text-xl">SMK Kristen PEDAN</span>
             </Link>
 

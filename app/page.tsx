@@ -40,12 +40,7 @@ export default function Home() {
 
         {/* Hero Content */}
         <div className="relative z-10 container mx-auto px-4 pt-24 pb-16 md:pt-32 md:pb-24">
-          <div className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-              <Trophy className="h-5 w-5" />
-              <span className="text-sm font-medium">Sistem Manajemen Produksi #1</span>
-            </div>
-            
+          <div className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto py-10">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white tracking-tight">
               SMK Kristen <span className="text-blue-600 dark:text-blue-400">PEDAN</span>
             </h1>

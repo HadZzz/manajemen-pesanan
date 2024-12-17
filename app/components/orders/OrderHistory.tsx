@@ -16,19 +16,19 @@ export const OrderHistory = ({ orders }: OrderHistoryProps) => {
       {orders.map((order) => (
         <Card key={order.id} className="hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-1 gap-6">
               <div className="space-y-4">
                 <div>
                   <h3 className="text-xl font-semibold text-blue-900">{order.customerName}</h3>
                   <p className="text-blue-600">{order.productName}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> 
+                  <div className="flex items-center gap-2 bg-gray-100 p-2 rounded-md">
                     <DollarSign className="w-5 h-5 text-blue-600" />
                     <div className="text-sm">
                       <p className="text-gray-600">Total Harga</p>
-                      <p className="font-medium">Rp {parseInt(order.totalPrice).toLocaleString()}</p>
+                      <p className="font-medium text-lg">Rp {parseInt(order.totalPrice).toLocaleString()}</p>
                     </div>
                   </div>
 
@@ -70,8 +70,8 @@ export const OrderHistory = ({ orders }: OrderHistoryProps) => {
                       Selesai
                     </span>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => generatePDF(order)}
                     className="flex items-center gap-2"
                   >
