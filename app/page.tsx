@@ -7,7 +7,6 @@ import {
   FileText, 
   Clock, 
   Activity, 
-  Trophy,
   ChevronRight,
   Shield,
   Sparkles
