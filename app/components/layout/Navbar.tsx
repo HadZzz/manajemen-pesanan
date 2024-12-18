@@ -54,7 +54,6 @@ export const Navbar = () => {
                 width={30} // Lebar gambar
                 height={30} // Tinggi gambar
               />
-              <span className="font-bold text-xl">SMK Kristen PEDAN</span>
             </Link>
 
             {/* Desktop Navigation */}
