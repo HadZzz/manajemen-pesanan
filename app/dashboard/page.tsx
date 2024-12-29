@@ -1,32 +1,20 @@
 'use client';
+// Order Components Library
 import { OrderForm } from '../components/orders/OrderForm';
 import { OrderProgress } from '../components/orders/OrderProgress';
 import { OrderHistory } from '../components/orders/OrderHistory';
+import { OrderSkeleton } from "@/app/components/orders/OrderSkeleton"
+
+// React Library
 import { useState, useEffect } from 'react';
+
+// Radix Components Library
 import { Order } from '@/app/types/order';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from 'sonner';
 
-// Komponen Skeleton untuk loading state
-const OrderSkeleton = () => (
-  <div className="space-y-6">
-    {[1, 2, 3].map((index) => (
-      <Card key={index} className="w-full">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-            </div>
-            <div className="h-8 bg-gray-200 rounded w-full"></div>
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);
+// Third Party Components Library
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
@@ -92,22 +80,76 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpdateProgress = async (orderId: number, componentId: number, progress: number) => {
+  const handleUpdateOrder = async (orderId: number, updatedOrder) => {
     try {
-      const response = await fetch('/api/orders', {
-        method: 'PUT',
+      const response = await fetch(`/api/orders`, {
+        method: 'PUT', // Gunakan PATCH jika hanya ingin memperbarui sebagian data
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          orderId,
-          componentId,
-          progress
-        })
+        body: JSON.stringify({ orderId, ...updatedOrder }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update progress');
+        throw new Error('Failed to update order');
+      }
+
+      toast.success('Pesanan berhasil diperbarui');
+
+      // Refresh orders after updating
+      await fetchOrders();
+      setActiveTab('progress');
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('Gagal memperbarui pesanan');
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      // Mengirim permintaan DELETE ke API untuk menghapus order beserta komponennya
+      const response = await fetch('/api/orders', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete order');
+      }
+
+      toast.success('Pesanan berhasil dihapus');
+
+      // Update local state setelah penghapusan order
+      setActiveOrders(activeOrders.filter(order => order.id !== orderId));
+
+      // Optional: Mengambil data pesanan terbaru setelah penghapusan
+      await fetchOrders();
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('Gagal menghapus pesanan');
+    }
+  };
+
+  const handleUpdateStatus = async (orderId, componentId, status) => {
+    try {
+      console.log(orderId, componentId. status)
+      const response = await fetch("/api/components", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({      
+          orderId,
+          componentId,
+          status,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
       }
       
       // Update local state
@@ -116,17 +158,55 @@ export default function DashboardPage() {
           return {
             ...order,
             components: order.components.map(comp => 
-              comp.id === componentId ? { ...comp, progress } : comp
+              comp.id === componentId ? { ...comp, status } : comp
             )
           };
         }
         return order;
       }));
 
-      toast.success('Progress berhasil diupdate');
+      toast.success('Status berhasil diupdate');
     } catch (error) {
-      console.error('Error updating progress:', error);
-      toast.error('Gagal mengupdate progress');
+      console.error('Error updating status:', error);
+      toast.error('Gagal mengupdate status');
+    }
+  };
+
+  const handleUpdateDescription = async (orderId, componentId, description) => {
+    try {
+      const response = await fetch("/api/components", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          componentId,
+          description,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update description");
+      }
+      
+      // Update local state
+      setActiveOrders(activeOrders.map(order => {
+        if (order.id === orderId) {
+          return {
+            ...order,
+            components: order.components.map(comp => 
+              comp.id === componentId ? { ...comp, description } : comp
+            )
+          };
+        }
+        return order;
+      }));
+
+      toast.success('Deskripsi berhasil diupdate');
+    } catch (error) {
+      console.error('Error updating deskripsi:', error);
+      toast.error('Gagal mengupdate deskripsi');
     }
   };
 
@@ -169,7 +249,7 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex space-x-4">
+     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mx-auto">
         <Button 
           variant={activeTab === 'new' ? 'default' : 'outline'}
           onClick={() => setActiveTab('new')}
@@ -201,8 +281,11 @@ export default function DashboardPage() {
           {activeTab === 'progress' && (
             <OrderProgress
               orders={activeOrders}
-              onUpdateProgress={handleUpdateProgress}
+              onUpdateStatus={handleUpdateStatus}
+              onUpdateDescription={handleUpdateDescription}
               onComplete={handleComplete}
+              onDeleteOrder={handleDeleteOrder}
+              onUpdateOrder={handleUpdateOrder}
             />
           )}
 

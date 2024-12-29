@@ -48,7 +48,8 @@ model Component {
   name      String
   price     Decimal  @db.Decimal(10, 2)
   quantity  Int
-  progress  Int      @default(0)
+  status    String      @default("")
+  description String    @default("")
   order     Order    @relation(fields: [orderId], references: [id])
   orderId   Int
   createdAt DateTime @default(now())

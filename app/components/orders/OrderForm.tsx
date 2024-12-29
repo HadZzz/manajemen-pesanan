@@ -1,11 +1,12 @@
 'use client';
-import React, { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
-import { Order } from '@/app/types/order'; // Removed Component import since it's not used
+import { Order } from '@/app/types/order';
 
 interface OrderFormProps {
   onSubmit: (order: Order) => void;
@@ -27,38 +28,63 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
     }[]
   });
 
+  const formatCurrency = (value: string): string => {
+    const numericValue = parseFloat(value.replace(/,/g, '').replace(/\D/g, '')) || 0;
+    return numericValue.toLocaleString('id-ID', { minimumFractionDigits: 0 });
+  };
+
+  const parseCurrency = (value: string): number => {
+    return parseFloat(value.replace(/,/g, '').replace(/\D/g, '')) || 0;
+  };
+
+  const calculateTotals = () => {
+    const totalQuantity = formData.components.reduce((sum, component) => {
+      return sum + (parseInt(component.quantity, 10) || 0);
+    }, 0);
+
+    const totalPrice = formData.components.reduce((sum, component) => {
+      const price = parseCurrency(component.price) || 0;
+      const quantity = parseInt(component.quantity, 10) || 0;
+      return sum + price * quantity;
+    }, 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      quantity: totalQuantity.toString(),
+      totalPrice: totalPrice.toLocaleString('id-ID'),
+    }));
+  };
+
   const addComponent = () => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       components: [
-        ...formData.components,
+        ...prev.components,
         {
           name: '',
           price: '',
-          quantity: ''
-        }
-      ]
-    });
+          quantity: '',
+        },
+      ],
+    }));
   };
 
   const removeComponent = (index: number) => {
-    const newComponents = [...formData.components];
-    newComponents.splice(index, 1);
-    setFormData({
-      ...formData,
-      components: newComponents
+    setFormData((prev) => {
+      const newComponents = [...prev.components];
+      newComponents.splice(index, 1);
+      return { ...prev, components: newComponents };
     });
   };
 
   const updateComponent = (index: number, field: string, value: string) => {
-    const newComponents = [...formData.components];
-    newComponents[index] = {
-      ...newComponents[index],
-      [field]: value
-    };
-    setFormData({
-      ...formData,
-      components: newComponents
+    setFormData((prev) => {
+      const newComponents = [...prev.components];
+      newComponents[index] = {
+        ...newComponents[index],
+        [field]: field === 'price' ? formatCurrency(value) : value,
+      };
+      return { ...prev, components: newComponents };
     });
   };
 
@@ -66,13 +92,25 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Pastikan harga dan totalPrice menjadi angka (integer)
+    const updatedComponents = formData.components.map((component) => ({
+      ...component,
+      price: parseCurrency(component.price), // mengonversi price ke angka
+    }));
+
+    const updatedFormData = {
+      ...formData,
+      components: updatedComponents,
+      totalPrice: parseCurrency(formData.totalPrice), // mengonversi totalPrice ke angka
+    };
+
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(updatedFormData), // kirim data yang sudah diubah
       });
 
       if (!response.ok) {
@@ -82,7 +120,7 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
       const newOrder = await response.json();
       onSubmit(newOrder);
 
-      // Reset form
+      // Reset form setelah berhasil
       setFormData({
         customerName: '',
         orderDate: '',
@@ -90,7 +128,7 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
         productName: '',
         quantity: '',
         totalPrice: '',
-        components: []
+        components: [],
       });
     } catch (error) {
       console.error('Error creating order:', error);
@@ -99,6 +137,11 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
       setIsSubmitting(false);
     }
   };
+
+  // Hitung ulang total setiap kali komponen berubah
+  useEffect(() => {
+    calculateTotals();
+  }, [formData.components]);
 
   return (
     <Card className="w-full">
@@ -112,7 +155,7 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
               <Label>Nama Pelanggan</Label>
               <Input 
                 value={formData.customerName}
-                onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                 required
               />
             </div>
@@ -120,7 +163,7 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
               <Label>Nama Produk</Label>
               <Input 
                 value={formData.productName}
-                onChange={(e) => setFormData({...formData, productName: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
                 required
               />
             </div>
@@ -129,17 +172,19 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
               <Input 
                 type="number"
                 value={formData.quantity}
-                onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                required
+                readOnly
+                disabled
+                className="bg-gray-200 text-gray-500 cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
               <Label>Total Harga</Label>
               <Input 
-                type="number"
+                type="text"
                 value={formData.totalPrice}
-                onChange={(e) => setFormData({...formData, totalPrice: e.target.value})}
-                required
+                readOnly
+                disabled
+                className="bg-gray-200 text-gray-500 cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
@@ -147,7 +192,7 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
               <Input 
                 type="date"
                 value={formData.orderDate}
-                onChange={(e) => setFormData({...formData, orderDate: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, orderDate: e.target.value })}
                 required
               />
             </div>
@@ -156,14 +201,14 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
               <Input 
                 type="date"
                 value={formData.deadline}
-                onChange={(e) => setFormData({...formData, deadline: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                 required
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap">
               <h3 className="font-semibold">Komponen Produk</h3>
               <Button type="button" onClick={addComponent} variant="outline" size="sm">
                 <Plus className="w-4 h-4 mr-2" />
@@ -173,7 +218,7 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
             
             {formData.components.map((component, index) => (
               <Card key={index} className="p-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Nama Komponen</Label>
                     <Input 
@@ -183,9 +228,9 @@ export const OrderForm = ({ onSubmit }: OrderFormProps) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Harga</Label>
+                    <Label>Harga/unit</Label>
                     <Input 
-                      type="number"
+                      type="text"
                       value={component.price}
                       onChange={(e) => updateComponent(index, 'price', e.target.value)}
                       required

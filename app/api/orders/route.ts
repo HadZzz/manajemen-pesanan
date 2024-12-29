@@ -39,7 +39,6 @@ export async function POST(request: Request) {
             name: component.name,
             price: component.price,
             quantity: parseInt(component.quantity),
-            progress: 0
           }))
         }
       },
@@ -58,41 +57,88 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+export async function DELETE(request: Request) {
   try {
-    const body = await request.json();
-    
-    if (body.status === 'completed') {
-      const order = await prisma.order.update({
-        where: { id: body.orderId },
-        data: {
-          status: 'completed',
-          completedAt: new Date()
-        },
-        include: {
-          components: true
-        }
-      });
-      return NextResponse.json(order);
+    // Ambil orderId dari request body
+    const { orderId } = await request.json();
+
+    // Hapus komponen-komponen terkait terlebih dahulu
+    await prisma.component.deleteMany({
+      where: {
+        orderId: orderId,
+      },
+    });
+
+    // Sekarang hapus order
+    const deletedOrder = await prisma.order.delete({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!deletedOrder) {
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      );
     }
 
-    if (body.componentId && typeof body.progress === 'number') {
-      const component = await prisma.component.update({
-        where: { id: body.componentId },
-        data: { progress: body.progress }
-      });
-      return NextResponse.json(component);
-    }
-
-    return NextResponse.json(
-      { error: 'Invalid update request' },
-      { status: 400 }
-    );
+    // Kembalikan respons sukses jika penghapusan berhasil
+    return NextResponse.json({
+      message: 'Order and associated components deleted successfully',
+    });
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(
-      { error: 'Error updating order' },
+      { error: 'Error deleting order' },
       { status: 500 }
     );
   }
 }
+
+export async function PUT(request: Request) {
+      try {
+        const body = await request.json();
+
+        // Update order menggunakan Prisma
+        const order = await prisma.order.update({
+          where: { id: body.orderId },
+          data: {
+            customerName: body.customerName,
+            orderDate: new Date(body.orderDate),
+            deadline: new Date(body.deadline),
+            productName: body.productName
+          }
+        });
+
+        // Cek jika order berhasil diupdate
+        if (!order) {
+          return NextResponse.json(
+            { error: 'Order not found' },
+            { status: 404 } // 404 jika order tidak ditemukan
+          );
+        }
+
+        // Mengembalikan hasil sukses dengan status 200
+        return NextResponse.json(order, { status: 200 });
+      } catch (error) {
+        console.error('Database Error:', error);
+
+        // Menangani kesalahan jika terjadi exception di Prisma atau di kode lain
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          // Menangani kesalahan yang sudah diketahui, misalnya jika id order tidak valid
+          return NextResponse.json(
+            { error: 'Invalid order ID' },
+            { status: 400 } // 400 untuk bad request jika ada kesalahan pada ID atau data
+          );
+        } else {
+          // Menangani kesalahan yang tidak diketahui (misalnya masalah server)
+          return NextResponse.json(
+            { error: 'Error updating order' },
+            { status: 500 } // 500 untuk kesalahan server
+          );
+        }
+      }
+}
+
+
