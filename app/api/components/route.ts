@@ -37,8 +37,6 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
 
-    console.log(body)
-
       if (body.status === 'completed') {
       const order = await prisma.order.update({
         where: { id: body.orderId },
